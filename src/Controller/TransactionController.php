@@ -349,19 +349,17 @@ return new JsonResponse($data);
             $values->getBorneInferieure();
             $values->getBorneSuperieure();
             $values->getValeur();
-            if (
-                $argent >= $values->getBorneInferieure()
-                && $argent <= $values->getBorneSuperieure()
-            ) {
+            if ($argent >= $values->getBorneInferieure() && $argent <= $values->getBorneSuperieure()) {
                 $trans->setTarif($values);
                 $commission = $values->getValeur();
-
                 $commi1 = ($commission * 10) / 100;
                 $commi2 = ($commission * 20) / 100;
                 $commi3 = ($commission * 30) / 100;
                 $commi4 = ($commission * 40) / 100;
             }
         }
+        $montantEnv= $trans->getMontant()-$commission;
+      $trans->setMontant($montantEnv);
 
         $trans->setCommissionEnvoie($commi1);
         $trans->setCommissionRetrait($commi2);
@@ -539,5 +537,54 @@ public function listTransUser(TransactionRepository $transRepo , SerializerInter
     ]);
 
 }
- 
+
+///////----Fonction Montant et frais--------//////
+/**
+ * @Route("/fraisMontant",name="fraisMontant",methods={"POST"})
+ * @IsGranted({"ROLE_USER", "ROLE_ADMIN"})
+ */
+public function montantFrais(Request $request,TransactionRepository $transRepo , SerializerInterface $serializer ):Response{
+  
+    
+    $values = json_decode($request->getContent(),true); 
+
+    //$montant=$transRepo->findByMontant($values['montant']);
+//    $values = $request->request->all();
+
+//    $trans = new Transaction();
+
+//    $form = $this->createForm(TransactionType::class, $trans);
+
+//    $form->handleRequest($request);
+
+//    $form->submit($values);
+//  $argent = $form->get('montant')->getData();
+   // $argent = $transRepo->findByMontant($values['montant']);
+
+    $commission=0;
+
+
+    $tarif = $this->getDoctrine()->getRepository(Tarifs::class)->findAll();
+
+    foreach ($tarif as $value) {
+      
+        $value->getBorneInferieure();
+        $value->getBorneSuperieure();
+        $value->getValeur();
+        if (
+            $values['montant']>= $value->getBorneInferieure()
+            && $values['montant']<= $value->getBorneSuperieure()
+        ) {
+            $commission = $value->getValeur();
+           // var_dump($commission);
+            
+        return new Response($commission, 200, [
+            'Content-Type' => 'application/json'
+        ]); 
+        }
+          
+    }
+    
+
+}
 }
