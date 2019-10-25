@@ -129,6 +129,11 @@ class   Transaction
      */
     private $tarif;
 
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $montantTotal;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -314,6 +319,18 @@ class   Transaction
     public function setTarif(?Tarifs $tarif): self
     {
         $this->tarif = $tarif;
+
+        return $this;
+    }
+
+    public function getMontantTotal(): ?int
+    {
+        return $this->montantTotal;
+    }
+
+    public function setMontantTotal(int $montantTotal): self
+    {
+        $this->montantTotal = $montantTotal;
 
         return $this;
     }

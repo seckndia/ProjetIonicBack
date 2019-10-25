@@ -14,6 +14,8 @@ class TransactionType extends AbstractType
         $builder
             ->add('cni')
             ->add('montant')
+           
+
         ;
     }
 

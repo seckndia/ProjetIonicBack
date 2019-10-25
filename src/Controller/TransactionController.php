@@ -306,7 +306,11 @@ return new JsonResponse($data);
 
     public function envoie(Request $request, EntityManagerInterface $entityManager): Response
     {
-        $values = $request->request->all();
+        $values=json_decode($request->getContent(),true);
+        if(!$values){
+            $values = $request->request->all();
+        }
+        
 
       
         $envoie = new Envoie();
@@ -351,16 +355,20 @@ return new JsonResponse($data);
             $values->getValeur();
             if ($argent >= $values->getBorneInferieure() && $argent <= $values->getBorneSuperieure()) {
                 $trans->setTarif($values);
+                
                 $commission = $values->getValeur();
                 $commi1 = ($commission * 10) / 100;
                 $commi2 = ($commission * 20) / 100;
                 $commi3 = ($commission * 30) / 100;
                 $commi4 = ($commission * 40) / 100;
+
+                $montantEnv= $trans->getMontant()+ $values->getValeur();
+
             }
         }
-        $montantEnv= $trans->getMontant()-$commission;
-      $trans->setMontant($montantEnv);
-
+        
+     
+      $trans->setMontantTotal( $montantEnv);
         $trans->setCommissionEnvoie($commi1);
         $trans->setCommissionRetrait($commi2);
         $trans->setCommissionEtat($commi3);
@@ -385,8 +393,8 @@ return new JsonResponse($data);
 
 
 
-        if ($compt->getSolde() > $trans->getMontant()) {
-            $montantcal = $compt->getSolde() - $trans->getMontant() + $commi1;
+        if ($compt->getSolde() > $trans->getMontantTotal()) {
+            $montantcal = $compt->getSolde() - $trans->getMontantTotal() + $commi1;
 
 
             $compt->setSolde($montantcal);
@@ -425,8 +433,11 @@ public function retrait(Request $request, EntityManagerInterface $entityManager)
 
 {
 
- $values = json_decode($request->getContent(),true); 
-
+    $values=json_decode($request->getContent(),true);
+    if(!$values){
+        $values = $request->request->all();
+    }
+    
     $user = $this->getUser();
 
     $retrait= $this->getDoctrine()->getRepository(Transaction::class)->findOneBy(['codeEnvoie' => $values['codeEnvoie']]);   
